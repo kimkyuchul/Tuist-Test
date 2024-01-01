@@ -1,7 +1,7 @@
 import ProjectDescription
 
 let config = Config(
-    plugins: [
-        .local(path: .relativeToManifest("../../Plugins/TuistTest")),
-    ]
+    compatibleXcodeVersions: .all,
+    swiftVersion: "5.0",
+    generationOptions: .options()
 )

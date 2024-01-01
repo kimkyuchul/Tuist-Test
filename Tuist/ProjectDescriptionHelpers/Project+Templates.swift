@@ -9,6 +9,39 @@ extension Project {
     static let bundleID = "com.learnSwift.TuistTest"
     static let iOSTargetVersion = "15.0"
     
+    public static func app(
+        name: String,
+        dependencies: [TargetDependency] = [],
+        infoPlist: InfoPlist = .default,
+        sources: ProjectDescription.SourceFilesList? = nil,
+        resources: ProjectDescription.ResourceFileElements? = nil
+    ) -> Project {
+        return self.project(
+            name: name,
+            product: .app,
+            bundleID: bundleID + "\(name)",
+            dependencies: dependencies,
+            infoPlist: infoPlist,
+            sources: sources,
+            resources: resources
+        )
+    }
+}
+
+extension Project {
+    public static func framework(name: String,
+                                 dependencies: [TargetDependency] = [],
+                                 sources: ProjectDescription.SourceFilesList? = nil,
+                                 resources: ProjectDescription.ResourceFileElements? = nil
+    ) -> Project {
+        return .project(name: name,
+                        product: .framework,
+                        bundleID: bundleID + ".\(name)",
+                        dependencies: dependencies,
+                        sources: sources,
+                        resources: resources)
+    }
+    
     // App, Framework 템플릿 작성에 앞서 project 자체를 생성하는 템플릿
     // name: 프로젝트 이름
     // product: Product Type -> app, library, framework, test, appExtension, watch2App 등
@@ -23,6 +56,8 @@ extension Project {
         bundleID: String,
         schemes: [Scheme] = [],
         dependencies: [TargetDependency] = [],
+        infoPlist: InfoPlist = .default,
+        sources: ProjectDescription.SourceFilesList? = nil,
         resources: ProjectDescription.ResourceFileElements? = nil
     ) -> Project {
         return Project(
@@ -34,52 +69,13 @@ extension Project {
                     product: product,
                     bundleId: bundleID,
                     deploymentTarget: .iOS(targetVersion: iOSTargetVersion, devices: [.iphone, .ipad]),
-                    infoPlist: .file(path: .relativeToRoot("Supporting Files/Info.plist")),
-                    sources: ["Sources/**"],
+                    infoPlist: infoPlist,
+                    sources: sources,
                     resources: resources,
                     dependencies: dependencies
-                ),
-                Target(
-                    name: "\(name)Tests",
-                    platform: .iOS,
-                    product: .unitTests,
-                    bundleId: bundleID,
-                    deploymentTarget: .iOS(targetVersion: iOSTargetVersion, devices: [.iphone, .ipad]),
-                    infoPlist: .file(path: .relativeToRoot("Supporting Files/Info.plist")),
-                    sources: "Tests/**",
-                    dependencies: [
-                        .target(name: "\(name)")
-                    ]
                 )
             ],
             schemes: schemes
         )
     }
-    
-    // product를 app으로 생성
-    public static func app(
-            name: String,
-            dependencies: [TargetDependency] = [],
-            resources: ProjectDescription.ResourceFileElements? = nil
-        ) -> Project {
-            return self.project(
-                name: name,
-                product: .app,
-                bundleID: bundleID + "\(name)",
-                dependencies: dependencies,
-                resources: resources
-            )
-        }
-    
-    // product를 framework로 생성
-    public static func framework(name: String,
-                                     dependencies: [TargetDependency] = [],
-                                     resources: ProjectDescription.ResourceFileElements? = nil
-        ) -> Project {
-            return .project(name: name,
-                            product: .framework,
-                            bundleID: bundleID + ".\(name)",
-                            dependencies: dependencies,
-                            resources: resources)
-        }
 }
