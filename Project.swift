@@ -20,10 +20,18 @@ import MyPlugin
 
 // MARK: - Project
 
+let projectName = "TuistTest"
+let bundleID = "com.learnSwift.TuistTest"
+let iOSTargetVersion = "15.0"
+
+
 // Local plugin loaded
 let localHelper = LocalHelper(name: "MyPlugin")
 
 // Creates our project using a helper function defined in ProjectDescriptionHelpers
-let project = Project.app(name: "TuistTest",
+let project = Project.app(name: projectName,
                           platform: .iOS,
                           additionalTargets: ["TuistTestKit", "TuistTestUI"])
+
+
+
