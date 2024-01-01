@@ -1,76 +1,85 @@
 import ProjectDescription
 
-/// Project helpers are functions that simplify the way you define your project.
-/// Share code to create targets, settings, dependencies,
-/// Create your own conventions, e.g: a func that makes sure all shared targets are "static frameworks"
-/// See https://docs.tuist.io/guides/helpers/
+
+// Project+Templete 구현
+// App 프로젝트는 Application으로 나머지 프로젝트는 Framework으로 구성할것이기 때문에 Templete파일에는 app과 framework프로젝트를 생성하는 코드를 작성
 
 extension Project {
-    /// Helper function to create the Project for this ExampleApp
-    public static func app(name: String, platform: Platform, additionalTargets: [String]) -> Project {
-        var targets = makeAppTargets(name: name,
-                                     platform: platform,
-                                     dependencies: additionalTargets.map { TargetDependency.target(name: $0) })
-        targets += additionalTargets.flatMap({ makeFrameworkTargets(name: $0, platform: platform) })
-        return Project(name: name,
-                       organizationName: "tuist.io",
-                       targets: targets)
-    }
-
-    // MARK: - Private
-
-    /// Helper function to create a framework target and an associated unit test target
-    private static func makeFrameworkTargets(name: String, platform: Platform) -> [Target] {
-        let sources = Target(name: name,
-                platform: platform,
-                product: .framework,
-                bundleId: "io.tuist.\(name)",
-                infoPlist: .default,
-                sources: ["Targets/\(name)/Sources/**"],
-                resources: [],
-                dependencies: [])
-        let tests = Target(name: "\(name)Tests",
-                platform: platform,
-                product: .unitTests,
-                bundleId: "io.tuist.\(name)Tests",
-                infoPlist: .default,
-                sources: ["Targets/\(name)/Tests/**"],
-                resources: [],
-                dependencies: [.target(name: name)])
-        return [sources, tests]
-    }
-
-    /// Helper function to create the application target and the unit test target.
-    private static func makeAppTargets(name: String, platform: Platform, dependencies: [TargetDependency]) -> [Target] {
-        let platform: Platform = platform
-        let infoPlist: [String: InfoPlist.Value] = [
-            "CFBundleShortVersionString": "1.0",
-            "CFBundleVersion": "1",
-            "UIMainStoryboardFile": "",
-            "UILaunchStoryboardName": "LaunchScreen"
-            ]
-
-        let mainTarget = Target(
+    
+    static let bundleID = "com.learnSwift.TuistTest"
+    static let iOSTargetVersion = "15.0"
+    
+    // App, Framework 템플릿 작성에 앞서 project 자체를 생성하는 템플릿
+    // name: 프로젝트 이름
+    // product: Product Type -> app, library, framework, test, appExtension, watch2App 등
+    // deploymentTarget: 앱의 최소 타겟버전, 가능 디바이스
+    // infoPlist: default로 설정 시 프로젝트마다 infoPlist를 생성 현재 생성되는 프로젝트는 하나의 infoPlist를 사용하고자 하나의 plist를 바라보도록 경로를 설정
+    // sources: 코드가 들어갈 경로
+    // Tests타겟의 경우에는 Tests라는 폴더로 경로
+    // dependencies는 외부에서 주입할 Framework, Library등을 작성
+    public static func project(
+        name: String,
+        product: Product,
+        bundleID: String,
+        schemes: [Scheme] = [],
+        dependencies: [TargetDependency] = [],
+        resources: ProjectDescription.ResourceFileElements? = nil
+    ) -> Project {
+        return Project(
             name: name,
-            platform: platform,
-            product: .app,
-            bundleId: "io.tuist.\(name)",
-            infoPlist: .extendingDefault(with: infoPlist),
-            sources: ["Targets/\(name)/Sources/**"],
-            resources: ["Targets/\(name)/Resources/**"],
-            dependencies: dependencies
+            targets: [
+                Target(
+                    name: name,
+                    platform: .iOS,
+                    product: product,
+                    bundleId: bundleID,
+                    deploymentTarget: .iOS(targetVersion: iOSTargetVersion, devices: [.iphone, .ipad]),
+                    infoPlist: .file(path: .relativeToRoot("Supporting Files/Info.plist")),
+                    sources: ["Sources/**"],
+                    resources: resources,
+                    dependencies: dependencies
+                ),
+                Target(
+                    name: "\(name)Tests",
+                    platform: .iOS,
+                    product: .unitTests,
+                    bundleId: bundleID,
+                    deploymentTarget: .iOS(targetVersion: iOSTargetVersion, devices: [.iphone, .ipad]),
+                    infoPlist: .file(path: .relativeToRoot("Supporting Files/Info.plist")),
+                    sources: "Tests/**",
+                    dependencies: [
+                        .target(name: "\(name)")
+                    ]
+                )
+            ],
+            schemes: schemes
         )
-
-        let testTarget = Target(
-            name: "\(name)Tests",
-            platform: platform,
-            product: .unitTests,
-            bundleId: "io.tuist.\(name)Tests",
-            infoPlist: .default,
-            sources: ["Targets/\(name)/Tests/**"],
-            dependencies: [
-                .target(name: "\(name)")
-        ])
-        return [mainTarget, testTarget]
     }
+    
+    // product를 app으로 생성
+    public static func app(
+            name: String,
+            dependencies: [TargetDependency] = [],
+            resources: ProjectDescription.ResourceFileElements? = nil
+        ) -> Project {
+            return self.project(
+                name: name,
+                product: .app,
+                bundleID: bundleID + "\(name)",
+                dependencies: dependencies,
+                resources: resources
+            )
+        }
+    
+    // product를 framework로 생성
+    public static func framework(name: String,
+                                     dependencies: [TargetDependency] = [],
+                                     resources: ProjectDescription.ResourceFileElements? = nil
+        ) -> Project {
+            return .project(name: name,
+                            product: .framework,
+                            bundleID: bundleID + ".\(name)",
+                            dependencies: dependencies,
+                            resources: resources)
+        }
 }

@@ -29,9 +29,9 @@ let iOSTargetVersion = "15.0"
 let localHelper = LocalHelper(name: "MyPlugin")
 
 // Creates our project using a helper function defined in ProjectDescriptionHelpers
-let project = Project.app(name: projectName,
-                          platform: .iOS,
-                          additionalTargets: ["TuistTestKit", "TuistTestUI"])
-
+//let project = Project.app(name: projectName,
+//                          platform: .iOS,
+//                          additionalTargets: ["TuistTestKit", "TuistTestUI"])
+//
 
 
