@@ -79,3 +79,11 @@ extension Project {
         )
     }
 }
+
+// TargetDependency 추가
+// 의존성을 주입하기 위해선 TargetDependency타입으로 주입
+
+public extension TargetDependency {
+    static let rxSwift: TargetDependency = .external(name: "RxSwift")
+    static let snapKit: TargetDependency = .external(name: "SnapKit")
+}
