@@ -10,8 +10,6 @@ import ProjectDescriptionHelpers
 
 let project = Project.framework(
     name: Module.presentation.name,
-    dependencies: [
-        Module.domain
-    ].map(\.project),
+    dependencies: [Module.domain.project] + [.snapKit, .rxSwift],
     sources: .default
 )
